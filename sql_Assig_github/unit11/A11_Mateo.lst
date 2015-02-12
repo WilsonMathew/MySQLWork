@@ -1,0 +1,313 @@
+--------------
+/* Wilson Mateo */
+
+    /* enable warnings! */
+
+use a_bkorders
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+/*  TASK 00 */ 
+select user(), current_date(), version(), @@sql_mode
+--------------
+
+*************************** 1. row ***************************
+        user(): WilsonMathew@localhost
+current_date(): 2014-04-06
+     version(): 5.6.16
+    @@sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 01 */
+select book_id, title
+from a_bkinfo.books
+where book_id in
+	(
+	    select book_id
+		from a_bkinfo.book_topics
+		where topic_id = 'SQL'
+		or topic_id = 'DB'
+	)
+	and book_id in 
+	(
+	    select book_id
+		from a_bkorders.order_details
+	)
+order by book_id
+--------------
+
++---------+-----------------------------------------+
+| book_id | title                                   |
++---------+-----------------------------------------+
+|    1105 | SQL:1999 Relational Language Concepts   |
+|    1106 | SQL for Smarties                        |
+|    1107 | SQL Puzzles and Answers                 |
+|    1108 | Database Systems                        |
+|    1109 | Intro to DB Systems-7th Ed              |
+|    1110 | Adv SQL:1999 Object_Relational Features |
+|    1128 | Temporal Data and the Relational Model  |
+|    1142 | Relational Database Theory              |
+|    1161 | SQL Programming Style                   |
+|    1162 | Trees and Hierarchies                   |
+|    1175 | MySQL in a Nutshell                     |
+|    1180 | MySQL Database Design and Tuning        |
+|    1182 | MySQL Cookbook                          |
+|    1184 | MySQL Developer's Library               |
+|    1185 | MySQL Stored Procedures                 |
+|    1188 | SQL for MySQL Developers                |
+|    1278 | Beginning VB 2008 Databases             |
+|    1306 | Myths of SQL                            |
+|    1483 | Programming with XML                    |
+|    2002 | SQL Server 2005 A Beginner's Guide      |
+|    2004 | SQL Server 2005 Stored Procedure Prg    |
+|    2005 | Developer's Guide to SQL Server 2005    |
+|    2006 | T_SQL Programming (Inside series)       |
+|    2007 | T_SQL Querying (Inside series)          |
+|    2008 | SQL Server 2005 T_Sql Recipies          |
+|    2009 | SQL Server 2005 Express Edition         |
+|    2018 | Oracle Database 11g SQL                 |
+|    2025 | Oracle SQL Fundamentals I Exam Guide    |
+|    2032 | Oracle and the rest of the world        |
++---------+-----------------------------------------+
+29 rows in set (0.00 sec)
+
+--------------
+/*  TASK 02 */
+select book_id, title
+from a_bkinfo.books
+where book_id in
+	(
+	    select book_id
+		from a_bkinfo.book_topics
+		where topic_id = 'DB' and
+			  topic_id = 'SQL'
+	)
+	and book_id in 
+	(
+	    select book_id
+		from a_bkorders.order_details
+	)
+order by book_id
+--------------
+
+Empty set (0.00 sec)
+
+--------------
+/*  TASK 03 */
+select book_id, title
+from a_bkinfo.books
+where book_id in 
+	(
+	    select book_id
+		from a_bkorders.order_details
+	)
+	and book_id in 
+	(
+	    select book_id
+		from a_bkinfo.book_topics
+		where topic_id = 'SQL'
+	)
+	and book_id not in
+	(
+	    select book_id
+		from a_bkinfo.book_topics
+		where topic_id = 'DB'
+	)
+order by book_id
+--------------
+
++---------+--------------------------------------+
+| book_id | title                                |
++---------+--------------------------------------+
+|    1106 | SQL for Smarties                     |
+|    1107 | SQL Puzzles and Answers              |
+|    1161 | SQL Programming Style                |
+|    1162 | Trees and Hierarchies                |
+|    1175 | MySQL in a Nutshell                  |
+|    1182 | MySQL Cookbook                       |
+|    1184 | MySQL Developer's Library            |
+|    1185 | MySQL Stored Procedures              |
+|    1188 | SQL for MySQL Developers             |
+|    1306 | Myths of SQL                         |
+|    1483 | Programming with XML                 |
+|    2002 | SQL Server 2005 A Beginner's Guide   |
+|    2004 | SQL Server 2005 Stored Procedure Prg |
+|    2005 | Developer's Guide to SQL Server 2005 |
+|    2006 | T_SQL Programming (Inside series)    |
+|    2007 | T_SQL Querying (Inside series)       |
+|    2008 | SQL Server 2005 T_Sql Recipies       |
+|    2009 | SQL Server 2005 Express Edition      |
+|    2018 | Oracle Database 11g SQL              |
+|    2025 | Oracle SQL Fundamentals I Exam Guide |
++---------+--------------------------------------+
+20 rows in set (0.00 sec)
+
+--------------
+/*  TASK 04 */
+select book_id, title, year_publd
+from a_bkinfo.books
+where book_id in
+	(
+		select book_id
+		from a_bkorders.order_details
+		group by book_id
+		having sum(quantity*order_price) >= all
+			(
+				select sum(quantity * order_price)
+				from a_bkorders.order_details
+				group by book_id
+			)
+	)
+--------------
+
++---------+----------------------------------------+------------+
+| book_id | title                                  | year_publd |
++---------+----------------------------------------+------------+
+|    1128 | Temporal Data and the Relational Model |       2003 |
++---------+----------------------------------------+------------+
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 05 */
+select cust_id, cust_name_last
+from a_bkorders.customers
+where cust_id in
+	(
+		select cust_id
+		from a_bkorders.order_headers
+		where order_id in
+			(
+			select order_id
+			from a_bkorders.order_details
+			where book_id in
+				(
+					select book_id
+					from a_bkinfo.books
+					where book_id in
+						(
+							select book_id
+							from a_bkinfo.book_authors
+							where author_id in
+								(
+									select author_id 
+									from a_bkinfo.authors
+									where author_name_last ='Celko'
+								)
+						)
+				)
+			)
+		and
+		extract(year from order_date) = extract(year from current_date)
+	)
+order by cust_id
+--------------
+
++---------+----------------+
+| cust_id | cust_name_last |
++---------+----------------+
+|  221297 | Dodgson        |
+|  234138 | Keats          |
+|  282716 | Biederbecke    |
++---------+----------------+
+3 rows in set (0.00 sec)
+
+--------------
+/*  TASK 06 */
+select cust_id, cust_name_last
+from a_bkorders.customers
+where cust_id in
+		(
+			select cust_id
+			from 
+			a_bkorders.order_headers
+			group by cust_id
+			having count(*) >=3
+			and count(*) <=5
+		)
+		and cust_id in 
+		(
+			select cust_id
+			from a_bkorders.order_headers
+			where year(order_date) = year(current_date) - 1
+			group by cust_id
+		)
+order by cust_id
+--------------
+
++---------+----------------+
+| cust_id | cust_name_last |
++---------+----------------+
+|  211483 | Carroll        |
+|  224038 | Austin         |
+|  226656 | Randall        |
+|  234709 | Brahms         |
+|  259969 | Carlsen        |
+|  260368 | Muller         |
+|  263119 | Jones          |
+|  272611 | Jarrett        |
+|  299099 | Sam            |
++---------+----------------+
+9 rows in set (0.00 sec)
+
+--------------
+/*  TASK 07 */
+select book_id, title
+from a_bkinfo.books
+where book_id in
+	(
+		select book_id
+		from a_bkorders.order_details
+		where quantity > 500
+	)
+--------------
+
++---------+--------------------------------------+
+| book_id | title                                |
++---------+--------------------------------------+
+|    1108 | Database Systems                     |
+|    2025 | Oracle SQL Fundamentals I Exam Guide |
++---------+--------------------------------------+
+2 rows in set (0.00 sec)
+
+--------------
+/*  TASK 08 */
+select book_id, title, list_price
+from a_bkinfo.books otr
+where list_price > all
+	(
+		select list_price
+		from a_bkinfo.books
+		where book_id in
+			(
+				select book_id
+				from a_bkinfo.book_topics
+				where topic_id = 'DB'
+			)
+	)
+--------------
+
++---------+--------------------------------------+------------+
+| book_id | title                                | list_price |
++---------+--------------------------------------+------------+
+|    1306 | Myths of SQL                         |     259.99 |
+|    1623 | Lichens of North America             |     135.00 |
+|    1627 | The Ants                             |     120.18 |
+|    1978 | Acoustic Communication in Birds Vol1 |     103.91 |
+|    2031 | Comparative SQL                      |      99.99 |
++---------+--------------------------------------+------------+
+5 rows in set (0.00 sec)
+
+--------------
+	
+/*  TASK 09 */
+
+
+/*  TASK 10 */
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+Bye

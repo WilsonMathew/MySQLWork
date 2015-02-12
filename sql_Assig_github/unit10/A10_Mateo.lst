@@ -1,0 +1,530 @@
+--------------
+/*Wilson Mateo*/
+
+    /* enable warnings! */
+
+use  a_bkorders -- put the database name into this command and remove the comment. Keep the ending semicolon;
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+/*  TASK 00 */ 
+select user(), current_date(), version(), @@sql_mode
+--------------
+
+*************************** 1. row ***************************
+        user(): WilsonMathew@localhost
+current_date(): 2014-03-25
+     version(): 5.6.16
+    @@sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 01 */
+
+set @rundate := current_date
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @first_date:=date_add(@rundate, interval -4 month)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @second_date:=date_add(@rundate, interval -3 month)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @third_date =date_add(@rundate, interval -2 month)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @first_month= month(@first_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @first_year= year(@first_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @second_month= month(@second_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @second_year= year(@second_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @third_month= month(@third_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @third_year= year(@third_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+select   @first_date, @second_date, @third_date, @rundate, @first_month,@first_year, @second_month, @second_year, @third_month,@third_year
+--------------
+
+*************************** 1. row ***************************
+  @first_date: 2013-11-25
+ @second_date: 2013-12-25
+  @third_date: 2014-01-25
+     @rundate: 2014-03-25
+ @first_month: 11
+  @first_year: 2013
+@second_month: 12
+ @second_year: 2013
+ @third_month: 1
+  @third_year: 2014
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 02 */ 
+		Select c_id, c_name 
+		from a_bkorders.CustWithOrders
+		where 
+			month(order_date) = @first_month 
+			and
+			year(order_date) = @first_year
+	UNION
+		Select c_id, c_name
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+	UNION
+		Select c_id, c_name
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and 
+			year(order_date) = @third_year
+--------------
+
++--------+----------------------+
+| c_id   | c_name               |
++--------+----------------------+
+| 200368 | Blake, William       |
+| 227105 | Kafka, Franz         |
+| 261502 | Hawthorne, Nathaniel |
+| 267780 | Shelly, Mary         |
+| 272787 | Carlson, Ben         |
+| 290298 | Swift, Jonathan      |
+| 222477 | Rossetti, Christina  |
+| 259906 | Capybara, Wile E.    |
+| 221297 | Dodgson, Charles     |
+| 226656 | Randall, Randell     |
++--------+----------------------+
+10 rows in set (0.01 sec)
+
+--------------
+/*  TASK 03 */
+	Select Distinct c_id,c_name
+	from a_bkorders.CustWithOrders
+	where 
+	c_id not in (
+		select c_id
+		from a_bkorders.CustWithOrders
+		where 
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	and c_id not in (
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	and c_id not in (
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+--------------
+
++--------+---------------------+
+| c_id   | c_name              |
++--------+---------------------+
+| 208950 | Adams, Samuel       |
+| 211483 | Carroll, Lewis      |
+| 212921 | Books on Tap        |
+| 217796 | Anders              |
+| 218709 | Bonnard, Paul       |
+| 224038 | Austin, Pat         |
+| 228175 | Cardin, Benjamin    |
+| 234138 | Keats, John         |
+| 234709 | Brahms, Johnnie     |
+| 239427 | Marksa, Anna        |
+| 258595 | Jobs, Peter         |
+| 259969 | Carlsen, Benny      |
+| 260368 | Muller, Jonathan    |
+| 263119 | Jones               |
+| 272611 | Jarrett, Keith      |
+| 276381 | Collins, Douglas    |
+| 282716 | Biederbecke, Dwight |
+| 296598 | Collins, Douglas    |
+| 299099 | Sam, Dave           |
++--------+---------------------+
+19 rows in set (0.01 sec)
+
+--------------
+/*  TASK 04 */
+	Select Distinct c_id, c_name
+	from a_bkorders.CustWithOrders
+	where c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	and c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	and c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+--------------
+
++--------+--------------+
+| c_id   | c_name       |
++--------+--------------+
+| 267780 | Shelly, Mary |
++--------+--------------+
+1 row in set (0.01 sec)
+
+--------------
+/*  TASK 05 */
+	Select distinct c_id, c_name
+	from a_bkorders.CustWithOrders
+	where 
+	c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	and c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	and c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+--------------
+
++--------+----------------------+
+| c_id   | c_name               |
++--------+----------------------+
+| 200368 | Blake, William       |
+| 261502 | Hawthorne, Nathaniel |
+| 272787 | Carlson, Ben         |
+| 290298 | Swift, Jonathan      |
++--------+----------------------+
+4 rows in set (0.01 sec)
+
+--------------
+/*  TASK 06 */
+
+	Select distinct c_id, c_name
+	from a_bkorders.CustWithOrders
+	where c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	and(
+	c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	or c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year)
+	)
+--------------
+
++--------+--------------+
+| c_id   | c_name       |
++--------+--------------+
+| 227105 | Kafka, Franz |
+| 267780 | Shelly, Mary |
++--------+--------------+
+2 rows in set (0.01 sec)
+
+--------------
+	/*  TASK 07 */
+	select c_id, c_name
+	from a_bkorders.CustWithOrders
+	where  c_id in (
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	and c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	and c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+	UNION 
+		select c_id, c_name
+		 from a_bkorders.CustWithOrders
+		where  c_id in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+		month(order_date) = @first_month
+		and
+		year(order_date) = @first_year
+		)
+	and c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+		month(order_date) = @second_month
+		and
+		year(order_date) = @second_year
+		)
+	and c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+--------------
+
++--------+--------------+
+| c_id   | c_name       |
++--------+--------------+
+| 227105 | Kafka, Franz |
++--------+--------------+
+1 row in set (0.01 sec)
+
+--------------
+/*  TASK 08 */
+	select distinct c_id, c_name
+	from a_bkorders.CustWithOrders
+	where( 
+	c_id in (
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	or
+	c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	)
+	and c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+--------------
+
++--------+----------------------+
+| c_id   | c_name               |
++--------+----------------------+
+| 200368 | Blake, William       |
+| 227105 | Kafka, Franz         |
+| 261502 | Hawthorne, Nathaniel |
+| 272787 | Carlson, Ben         |
+| 290298 | Swift, Jonathan      |
++--------+----------------------+
+5 rows in set (0.01 sec)
+
+--------------
+/*  TASK 09 */
+
+		select c_id, c_name
+		from a_bkorders.CustWithOrders
+		where
+		c_id in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+				month(order_date) = @first_month
+				and
+				year(order_date) = @first_year
+				)
+		and c_id not in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+				month(order_date) = @second_month
+				and
+				year(order_date) = @second_year
+				)
+		and c_id not in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+				month(order_date) = @third_month
+				and
+				year(order_date) = @third_year
+				)
+	UNION 
+		select c_id, c_name
+		from a_bkorders.CustWithOrders
+		where
+		c_id not in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+		and	c_id in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+				month(order_date) = @second_month
+				and
+				year(order_date) = @second_year
+				)
+		and c_id not in(
+			select c_id
+			from a_bkorders.CustWithOrders
+			where
+				month(order_date) = @third_month
+				and
+				year(order_date) = @third_year
+				)
+	UNION 
+		select distinct c_id, c_name
+		from a_bkorders.CustWithOrders
+		where
+	c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @first_month
+			and
+			year(order_date) = @first_year
+			)
+	and c_id not in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @second_month
+			and
+			year(order_date) = @second_year
+			)
+	and c_id in(
+		select c_id
+		from a_bkorders.CustWithOrders
+		where
+			month(order_date) = @third_month
+			and
+			year(order_date) = @third_year
+			)
+--------------
+
++--------+----------------------+
+| c_id   | c_name               |
++--------+----------------------+
+| 200368 | Blake, William       |
+| 261502 | Hawthorne, Nathaniel |
+| 272787 | Carlson, Ben         |
+| 290298 | Swift, Jonathan      |
+| 221297 | Dodgson, Charles     |
+| 226656 | Randall, Randell     |
++--------+----------------------+
+6 rows in set (0.02 sec)
+
+--------------
+/*  TASK 10 */
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+Bye

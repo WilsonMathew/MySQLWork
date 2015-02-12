@@ -1,0 +1,338 @@
+--------------
+/* Wilson Mateo */
+
+    /* enable warnings! */
+
+use a_bkinfo
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+/*  TASK 00 */ 
+select user(), current_date(), version(), @@sql_mode
+--------------
+
+*************************** 1. row ***************************
+        user(): WilsonMathew@localhost
+current_date(): 2014-04-28
+     version(): 5.6.16
+    @@sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+--------------
+/* function source code */ 
+show create function BookSize
+--------------
+
+*************************** 1. row ***************************
+            Function: BookSize
+            sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+     Create Function: CREATE DEFINER=`WilsonMathew`@`localhost` FUNCTION `BookSize`(
+ number_book_pages int
+ ) RETURNS varchar(20) CHARSET utf8
+begin
+	declare message varchar(20);
+	
+	if number_book_pages is null then
+		set message := 'InvalidInput';
+	elseif number_book_pages < 0 then
+		set message := 'InvalidInput';
+	elseif number_book_pages <= 300 then
+		set message := 'short';
+	elseif number_book_pages <= 800 then
+		set message := 'Medium';
+	elseif number_book_pages <= 1200 then
+		set message := 'Long' ;
+	else
+		set message := "ExtraLong";
+	end if;
+	
+	return message;
+ end
+character_set_client: cp850
+collation_connection: cp850_general_ci
+  Database Collation: utf8_general_ci
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 01 */
+select testRun
+		pageCount
+		, bookSize(pageCount) as "actual"
+		, expected
+from
+	(
+		 select 1 as testRun 
+		, null as "pageCount"
+		,'invalidInput' as "expected"
+		union all
+		select 2, -29, 'InvalidInput'
+		union all
+		select 3, 10, 'short'
+		union all
+		select 4, 300, 'short'
+		union all
+		select 5, 301, 'medium'
+		union all
+		select 6, 800, 'medium'
+		union all
+		select 7, 801, 'long'
+		union all
+		select 8, 1200, 'long'
+		union all
+		select 9, 400000, 'ExtraLong'
+	) testData
+--------------
+
++-----------+--------------+--------------+
+| pageCount | actual       | expected     |
++-----------+--------------+--------------+
+|         1 | InvalidInput | invalidInput |
+|         2 | InvalidInput | InvalidInput |
+|         3 | short        | short        |
+|         4 | short        | short        |
+|         5 | Medium       | medium       |
+|         6 | Medium       | medium       |
+|         7 | Long         | long         |
+|         8 | Long         | long         |
+|         9 | ExtraLong    | ExtraLong    |
++-----------+--------------+--------------+
+9 rows in set (0.00 sec)
+
+--------------
+/*  TASK 02 */
+select bookSize(page_count) as "Size" 
+	, page_count as "NmbrBooks"
+from a_bkinfo.books
+where page_count is not null or page_count < 0
+order by page_count
+--------------
+
++-----------+-----------+
+| Size      | NmbrBooks |
++-----------+-----------+
+| short     |         0 |
+| short     |         5 |
+| short     |         9 |
+| short     |        64 |
+| short     |        68 |
+| short     |        68 |
+| short     |        98 |
+| short     |       100 |
+| short     |       105 |
+| short     |       125 |
+| short     |       125 |
+| short     |       125 |
+| short     |       150 |
+| short     |       158 |
+| short     |       160 |
+| short     |       213 |
+| short     |       240 |
+| short     |       250 |
+| short     |       250 |
+| short     |       250 |
+| short     |       256 |
+| short     |       265 |
+| short     |       275 |
+| short     |       280 |
+| short     |       288 |
+| short     |       300 |
+| short     |       300 |
+| short     |       300 |
+| Medium    |       304 |
+| Medium    |       304 |
+| Medium    |       325 |
+| Medium    |       327 |
+| Medium    |       336 |
+| Medium    |       336 |
+| Medium    |       346 |
+| Medium    |       350 |
+| Medium    |       352 |
+| Medium    |       360 |
+| Medium    |       368 |
+| Medium    |       376 |
+| Medium    |       390 |
+| Medium    |       391 |
+| Medium    |       399 |
+| Medium    |       400 |
+| Medium    |       401 |
+| Medium    |       402 |
+| Medium    |       402 |
+| Medium    |       408 |
+| Medium    |       416 |
+| Medium    |       448 |
+| Medium    |       450 |
+| Medium    |       464 |
+| Medium    |       464 |
+| Medium    |       468 |
+| Medium    |       488 |
+| Medium    |       488 |
+| Medium    |       500 |
+| Medium    |       500 |
+| Medium    |       501 |
+| Medium    |       503 |
+| Medium    |       520 |
+| Medium    |       528 |
+| Medium    |       538 |
+| Medium    |       544 |
+| Medium    |       548 |
+| Medium    |       572 |
+| Medium    |       595 |
+| Medium    |       604 |
+| Medium    |       608 |
+| Medium    |       634 |
+| Medium    |       650 |
+| Medium    |       650 |
+| Medium    |       650 |
+| Medium    |       675 |
+| Medium    |       680 |
+| Medium    |       708 |
+| Medium    |       732 |
+| Medium    |       750 |
+| Medium    |       780 |
+| Long      |       828 |
+| Long      |       848 |
+| Long      |       879 |
+| Long      |       894 |
+| Long      |       918 |
+| Long      |       944 |
+| Long      |       956 |
+| Long      |       976 |
+| Long      |       980 |
+| Long      |       982 |
+| Long      |      1002 |
+| ExtraLong |      1368 |
+| ExtraLong |      2895 |
+| ExtraLong |      3192 |
++-----------+-----------+
+93 rows in set (0.01 sec)
+
+--------------
+/* function source code */
+show create function prevMonth
+--------------
+
+*************************** 1. row ***************************
+            Function: prevMonth
+            sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+     Create Function: CREATE DEFINER=`WilsonMathew`@`localhost` FUNCTION `prevMonth`(
+	in_date date
+	, in_mn_adjust int
+) RETURNS varchar(7) CHARSET utf8
+begin
+	declare yearMonth varchar(7);
+	declare sub_date date;
+	
+	if in_mn_adjust < 0 then
+		set yearMonth := null;
+	elseif in_date is null then
+		set yearMonth = substring(current_date(),1,7);
+	else
+		set sub_date = date_add(in_date, interval -in_mn_adjust month);
+		set yearMonth = substring(sub_date,1,7);
+
+	end if;
+	
+	return yearMonth;
+end
+character_set_client: cp850
+collation_connection: cp850_general_ci
+  Database Collation: utf8_general_ci
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 03 */
+select cust_id as "customer id"
+	   , concat(cust_name_last, ' , ' , cust_name_first) as "customer name"
+from a_bkorders.customers C
+where exists
+			(
+				select cust_id
+				from a_bkorders.order_headers OH
+				where C.cust_id = OH.cust_id
+				and
+				PrevMonth(current_date, 4) = prevMonth(order_date,0)
+			)
+		and exists
+			(
+				select cust_id
+				from a_bkorders.order_headers OH
+				where C.cust_id = OH.cust_id
+				and
+				PrevMonth(current_date, 3) = prevMonth(order_date,0)  
+			)
+		and exists
+			(
+				select cust_id
+				from a_bkorders.order_headers OH
+				where C.cust_id = OH.cust_id
+				and
+				PrevMonth(current_date, 2) = prevMonth(order_date,0)
+			)
+--------------
+
++-------------+----------------------+
+| customer id | customer name        |
++-------------+----------------------+
+|      222477 | Rossetti , Christina |
++-------------+----------------------+
+1 row in set (0.09 sec)
+
+--------------
+/*  TASK 04 */
+select
+	(
+		select count(*)
+		from a_bkorders.order_headers inOH
+		where 
+		prevMonth(order_date, 0) = prevMonth(current_date(),2)
+		or 
+		prevMonth(order_date, 0) = prevMonth(current_date(),1)
+	) as "NumberOrders"
+	,
+	(
+	select count(*)
+	from
+	(
+		select order_id
+		from a_bkorders.order_headers inOH
+		where 
+		prevMonth(order_date, 0) = prevMonth(current_date(),2)
+		or 
+		prevMonth(order_date, 0) = prevMonth(current_date(),1)
+		group by cust_id
+	) as customersOrders
+	) as NumberCustWithOrders
+from dual
+--------------
+
++--------------+----------------------+
+| NumberOrders | NumberCustWithOrders |
++--------------+----------------------+
+|           32 |                   13 |
++--------------+----------------------+
+1 row in set (0.27 sec)
+
+--------------
+/*  TASK 05 */
+
+
+/*  TASK 06 */
+
+
+/*  TASK 07 */
+
+
+/*  TASK 08 */
+
+
+/*  TASK 09 */
+
+
+/*  TASK 10 */
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+Bye

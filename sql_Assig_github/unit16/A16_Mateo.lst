@@ -1,0 +1,252 @@
+--------------
+/* Wilson Mateo */
+
+    /* enable warnings! */
+
+use a_testbed
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+/*  TASK 00 */ 
+select user(), current_date(), version(), @@sql_mode
+--------------
+
+*************************** 1. row ***************************
+        user(): WilsonMathew@localhost
+current_date(): 2014-05-13
+     version(): 5.6.16
+    @@sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 01 */
+select 
+  extractValue(an_data, '//cl_name') as Clients
+, extractValue(an_data, '/client/@cl_id') as ClientID
+from a_testbed.xml_animals
+where an_data like '%<an_type>cat</an_type>%'
+--------------
+
++----------+----------+
+| Clients  | ClientID |
++----------+----------+
+| Julia    | 893      |
+| Jennifer | 894      |
+| Josie    | 899      |
++----------+----------+
+3 rows in set (0.00 sec)
+
+--------------
+/*  TASK 02 */
+select 
+  extractValue(an_data, '/client/@cl_id') as id
+, extractValue(an_data, '//cl_name') as name
+from a_testbed.xml_animals
+where extractValue(an_data, 'count(//an_type[self:text()="cat"])') > 0
+--------------
+
++------+----------+
+| id   | name     |
++------+----------+
+| 893  | Julia    |
+| 894  | Jennifer |
+| 899  | Josie    |
++------+----------+
+3 rows in set (0.00 sec)
+
+--------------
+/*  TASK 03 */
+select 
+  extractValue(an_data, '//cl_name') as Clients
+, extractValue(an_data, '/client/@cl_id') as ClientsID
+, extractValue(an_data, 'count(//an_id)') as NumberOfAnimals
+from a_testbed.xml_animals
+order by extractValue(an_data, 'count(//an_id)') desc
+--------------
+
++-----------+-----------+-----------------+
+| Clients   | ClientsID | NumberOfAnimals |
++-----------+-----------+-----------------+
+| Elise     | 1011      | 6               |
+| Josie     | 899       | 6               |
+| Julia     | 893       | 4               |
+| Truble    | 313       | 3               |
+| Quentin   | 4         | 2               |
+| Helena    | 5         | 2               |
+| Jerome    | 892       | 2               |
+| Anna      | 1007      | 1               |
+| Betty     | 1077      | 1               |
+| Jake      | 891       | 1               |
+| Cathy     | 1008      | 1               |
+| Debby     | 1009      | 1               |
+| Fran      | 3         | 1               |
+| Jennifer  | 894       | 1               |
+| Archibald | 314       | 1               |
+| Truble5   | 316       | 1               |
+| Jospehina | 895       | 0               |
++-----------+-----------+-----------------+
+17 rows in set (0.00 sec)
+
+--------------
+/*  TASK 04 */
+select 
+ extractValue(an_data, '//cl_name') as Clients
+, extractValue(an_data, '/client/@cl_id') as ClientsID
+, concat (
+	extractValue(an_data, '//animal[1]/an_type[1]') 
+	,
+	' named '
+	,
+	extractValue(an_data, '//animal [1]/an_name[1]')
+	)
+	as Animal_First
+from a_testbed.xml_animals
+--------------
+
++-----------+-----------+---------------------------------+
+| Clients   | ClientsID | Animal_First                    |
++-----------+-----------+---------------------------------+
+| Anna      | 1007      | bird named                      |
+| Betty     | 1077      | bird named                      |
+| Jake      | 891       | bird named Anne                 |
+| Cathy     | 1008      | bird named Mimer                |
+| Debby     | 1009      | catbird named Mimer             |
+| Elise     | 1011      | elephant named Yeller           |
+| Fran      | 3         | caterpillar named bird          |
+| Quentin   | 4         | spider monkey named Mink        |
+| Helena    | 5         | elephant named Yeller           |
+| Jerome    | 892       | bird named Arnold               |
+| Julia     | 893       | bird named Abigail              |
+| Jennifer  | 894       | cat named Mittens               |
+| Jospehina | 895       |  named                          |
+| Josie     | 899       | cat named Abigail               |
+| Truble    | 313       | catfish named Archibald         |
+| Archibald | 314       | chipmunk named scaterrer        |
+| Truble5   | 316       | cat face spider named Archibald |
++-----------+-----------+---------------------------------+
+17 rows in set (0.00 sec)
+
+--------------
+/*  TASK 05 */
+select 
+  extractValue(an_data, '//cl_name') as Clients
+, extractValue(an_data, '/client/@cl_id') as ClientsID
+, concat (
+	extractValue(an_data, '//animal[1]/an_type[1]') 
+	,
+		case when extractValue(an_data, '//animal[1]/an_name[1]') = '' then
+			' with no name '
+		else
+			' named '
+		end
+	,
+	extractValue(an_data, '//animal[1]/an_name[last()]')
+	)
+	as Animal_First
+from a_testbed.xml_animals
+--------------
+
++-----------+-----------+---------------------------------+
+| Clients   | ClientsID | Animal_First                    |
++-----------+-----------+---------------------------------+
+| Anna      | 1007      | bird with no name               |
+| Betty     | 1077      | bird with no name               |
+| Jake      | 891       | bird named Carol                |
+| Cathy     | 1008      | bird named Mimer                |
+| Debby     | 1009      | catbird named Mimer             |
+| Elise     | 1011      | elephant named Yeller           |
+| Fran      | 3         | caterpillar named bird          |
+| Quentin   | 4         | spider monkey named Mink        |
+| Helena    | 5         | elephant named Yeller           |
+| Jerome    | 892       | bird named Arnold               |
+| Julia     | 893       | bird named Abigail              |
+| Jennifer  | 894       | cat named Mittens               |
+| Jospehina | 895       |  with no name                   |
+| Josie     | 899       | cat named Abigail               |
+| Truble    | 313       | catfish named Archibald         |
+| Archibald | 314       | chipmunk named scaterrer        |
+| Truble5   | 316       | cat face spider named Archibald |
++-----------+-----------+---------------------------------+
+17 rows in set (0.00 sec)
+
+--------------
+/*  TASK 06 */
+select 
+  extractValue(an_data, '//cl_name') as Clients
+, extractValue(an_data, '//client/@cl_id') as ClientsID
+, extractValue(an_data, '//animal[2]/an_id[1]') as one
+, extractValue(an_data, '//animal[3]/an_id[1]') as two
+from a_testbed.xml_animals
+where 
+	(
+		extractValue(an_data, '//animal[2]/an_id[1]') = extractValue(an_data, '//animal[last()]/an_id[1]')
+		or
+		extractValue(an_data, '//animal[3]/an_id[1]') = extractValue(an_data, '//animal[last()]/an_id[1]')
+	)
+	and 
+	(
+		extractValue(an_data, '//animal[2]/an_id[1]') != ''
+		or
+		extractValue(an_data, '//animal[3]/an_id[1]') != ''
+	)
+--------------
+
++---------+-----------+------+------+
+| Clients | ClientsID | one  | two  |
++---------+-----------+------+------+
+| Quentin | 4         | 1072 |      |
+| Helena  | 5         | 1082 |      |
+| Jerome  | 892       | 3    |      |
+| Truble  | 313       | 1303 | 3301 |
++---------+-----------+------+------+
+4 rows in set (0.00 sec)
+
+--------------
+/*  TASK 07 */
+select 
+  extractValue(an_data, '/client/@cl_id') as id
+, extractValue(an_data, '//cl_name') as name
+from a_testbed.xml_animals
+where 
+extractValue(an_data, 'count(//animal[an_type="bird" and an_price = 250])')
+--------------
+
++------+-------+
+| id   | name  |
++------+-------+
+| 891  | Jake  |
+| 893  | Julia |
++------+-------+
+2 rows in set (0.00 sec)
+
+--------------
+/*  TASK 08 */
+select 
+  extractValue(an_data, '/client/@cl_id') as id
+, extractValue(an_data, '//cl_name') as name
+from a_testbed.xml_animals
+where 
+extractValue(an_data, 'count(//animal[an_type="bird" and an_price = 250])')
+and 
+extractValue(an_data, 'count(//an_type[self:text()="cat"])') >= 2
+--------------
+
++------+-------+
+| id   | name  |
++------+-------+
+| 893  | Julia |
++------+-------+
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 09 */
+
+
+/*  TASK 10 */
+--------------
+
+Query OK, 0 rows affected (0.01 sec)
+
+Bye

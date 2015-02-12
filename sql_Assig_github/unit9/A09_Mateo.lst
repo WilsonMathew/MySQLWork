@@ -1,0 +1,145 @@
+--------------
+/*Wilson Mateo*/
+
+    /* enable warnings! */
+
+use a_vets
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+/*  TASK 00 */ 
+select user(), current_date(), version(), @@sql_mode
+--------------
+
+*************************** 1. row ***************************
+        user(): WilsonMathew@localhost
+current_date(): 2014-03-18
+     version(): 5.6.16
+    @@sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 01 */
+select
+a.an_id
+, an_type
+, count(an_name)
+, ex_fee
+From vt_animals a
+JOIN vt_exam_headers using (an_id)
+JOIN vt_exam_details using (ex_id)
+GROUP BY an_id
+ORDER BY an_id
+--------------
+
++-------+-----------+----------------+--------+
+| an_id | an_type   | count(an_name) | ex_fee |
++-------+-----------+----------------+--------+
+| 12035 | bird      |              2 |  75.00 |
+| 15001 | chelonian |              6 |  30.00 |
+| 15002 | chelonian |              4 |  30.00 |
+| 15401 | lizard    |              2 |  30.00 |
+| 16002 | porcupine |              6 |  20.00 |
+| 16003 | cat       |             12 |   5.00 |
+| 17002 | porcupine |              2 |  50.50 |
+| 17025 | lizard    |              9 |  20.00 |
+| 17026 | lizard    |              2 |  25.00 |
+| 17027 | lizard    |              4 |  25.00 |
+| 19845 | dog       |              2 |  55.00 |
+| 21001 | hedgehog  |              2 |  60.00 |
+| 21003 | dog       |              3 |  30.00 |
+| 21005 | dormouse  |              1 | 275.00 |
++-------+-----------+----------------+--------+
+14 rows in set (0.00 sec)
+
+--------------
+/*  TASK 02 */
+set @cur_date = year(current_date) -1
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+select
+c.cl_id
+, cl_name_last
+, coalesce(avg(ex_fee),'no exam') as AverageFee
+, coalesce(max(ex_fee), 'no exam') as HighestFee
+from vt_clients c
+LEFT JOIN vt_animals an on c.cl_id = an.cl_id
+LEFT JOIN vt_exam_headers eh on an.an_id = eh.an_id
+LEFT JOIN vt_exam_details ed on eh.ex_id = ed.ex_id
+where year(ex_date) = @cur_date
+Group by c.cl_id
+ORDER BY c.cl_id
+--------------
+
++-------+--------------+------------+------------+
+| cl_id | cl_name_last | AverageFee | HighestFee |
++-------+--------------+------------+------------+
+|   411 | Carter       | 46.222222  | 75.00      |
+|  1825 | Harris       | 70.747778  | 275.00     |
+|  5699 | Biederbecke  | 36.694444  | 150.00     |
+|  7152 | Brubeck      | 25.000000  | 25.00      |
++-------+--------------+------------+------------+
+4 rows in set (0.00 sec)
+
+--------------
+/*  TASK 03 */
+set @cur_date = now()
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+set @test_year= year(@cur_date)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+select
+ex_date
+, count(ex_date)
+, count(distinct eh.an_id)
+from vt_animals a 
+JOIN vt_exam_headers eh on  a.an_id = eh.an_id
+where quarter(ex_date) = quarter(date_add( @cur_date, interval -3 month ))
+and year(ex_date) = if( quarter(@cur_date) = 1, @test_year-1,@test_year)
+order by  ex_date
+--------------
+
++---------------------+----------------+--------------------------+
+| ex_date             | count(ex_date) | count(distinct eh.an_id) |
++---------------------+----------------+--------------------------+
+| 2013-12-22 09:00:00 |             10 |                        7 |
++---------------------+----------------+--------------------------+
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 04 */
+
+
+/*  TASK 05 */
+
+
+/*  TASK 06 */
+
+
+/*  TASK 07 */
+
+
+/*  TASK 08 */
+
+
+/*  TASK 09 */
+
+
+/*  TASK 10 */
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+Bye

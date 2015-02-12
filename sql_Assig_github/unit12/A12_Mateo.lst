@@ -1,0 +1,307 @@
+--------------
+/* Wilson Mateo */
+
+    /* enable warnings! */
+
+use  a_bkorders
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+/*  TASK 00 */ 
+select user(), current_date(), version(), @@sql_mode
+--------------
+
+*************************** 1. row ***************************
+        user(): WilsonMathew@localhost
+current_date(): 2014-04-15
+     version(): 5.6.16
+    @@sql_mode: STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+--------------
+/*  TASK 01 */
+	select cust_id, cust_name_last,
+	(
+		select count(*) as orderNum
+		from a_bkorders.order_headers OH
+		where C.cust_id = OH.cust_id
+		group by cust_id
+	) as OrderNum
+from a_bkorders.customers C
+where 
+	(
+		cust_state = 'NJ'
+		or cust_state = 'MA'
+	)
+	and cust_id in
+	(
+		select cust_id
+		from a_bkorders.order_headers
+	)
+order by cust_id
+--------------
+
++---------+----------------+----------+
+| cust_id | cust_name_last | OrderNum |
++---------+----------------+----------+
+|  208950 | Adams          |        1 |
+|  218709 | Bonnard        |       12 |
+|  226656 | Randall        |        3 |
+|  227105 | Kafka          |       14 |
+|  234709 | Brahms         |        3 |
+|  239427 | Marksa         |       10 |
+|  258595 | Jobs           |        2 |
+|  259969 | Carlsen        |        4 |
+|  261502 | Hawthorne      |       21 |
++---------+----------------+----------+
+9 rows in set (0.00 sec)
+
+--------------
+/*  TASK 02 */
+select cust_id, cust_name_last
+from a_bkorders.customers C
+where exists
+	(
+		select cust_id, order_date
+		from a_bkorders.order_headers OH
+		where C.cust_id = OH.cust_id
+		and year(order_date) = year(current_date) - 1 
+		and
+		month(order_date) = 10
+	)
+	and exists
+	(
+		select cust_id, order_date
+		from a_bkorders.order_headers OH
+		where C.cust_id = OH.cust_id
+		and year(order_date) = year(current_date) - 1 
+		and
+		month(order_date) = 11 
+	)
+	and exists
+	(
+		select cust_id, order_date
+		from a_bkorders.order_headers OH
+		where C.cust_id = OH.cust_id
+		and year(order_date) = year(current_date) - 1 
+		and
+		month(order_date) = 12
+	)
+order by cust_id
+--------------
+
++---------+----------------+
+| cust_id | cust_name_last |
++---------+----------------+
+|  227105 | Kafka          |
+|  267780 | Shelly         |
++---------+----------------+
+2 rows in set (0.00 sec)
+
+--------------
+/*  TASK 03 */
+select *
+from a_bkinfo.authors A 
+where EXISTS
+	(
+		select 'x'
+		from a_bkinfo.book_authors BA
+		where A.author_id = BA.author_id
+		group by author_id
+		having count(*) > 1
+	)
+	and exists
+	(
+			select author_id
+			from a_bkinfo.book_authors BA
+			where A.author_id = BA.author_id and
+			book_id not in
+			(
+				select book_id
+				from a_bkorders.order_details OD
+			)
+	)
+	and not exists
+	(
+			select author_id
+			from a_bkinfo.book_authors BA
+			where A.author_id = BA.author_id and
+			book_id in
+			(
+				select book_id
+				from a_bkorders.order_details OD
+			)
+	)
+order by author_id
+--------------
+
++-------------------+------------------+-----------+
+| author_name_first | author_name_last | author_id |
++-------------------+------------------+-----------+
+| Willie            | Mammoth          | M3110     |
+| Pete              | Moss             | M4540     |
++-------------------+------------------+-----------+
+2 rows in set (0.00 sec)
+
+--------------
+	
+/*  TASK 04 */
+select book_id, title
+from a_bkinfo.books B
+where exists
+	(
+		select book_id
+		from a_bkinfo.book_topics BT
+		where B.book_id = BT.book_id and
+		topic_id = 'MySQL'
+		and exists
+			(
+			select book_id
+			from a_bkinfo.book_topics BTin
+			where BT.book_id = BTin.book_id
+			and topic_id = 'SSRV'
+			)
+	) or exists
+	(
+		select book_id
+		from a_bkinfo.book_topics BT
+		where B.book_id = BT.book_id and
+		topic_id = 'ORA'
+		and exists
+			(
+			select book_id
+			from a_bkinfo.book_topics BTin
+			where BT.book_id = BTin.book_id
+			and topic_id = 'SSRV'
+			)
+	) or exists
+	(
+		select book_id
+		from a_bkinfo.book_topics BT
+		where B.book_id = BT.book_id and
+		topic_id = 'ORA'
+		and exists
+			(
+			select book_id
+			from a_bkinfo.book_topics BTin
+			where BT.book_id = BTin.book_id
+			and topic_id = 'MySQL'
+			)
+	)
+--------------
+
++---------+----------------------------+
+| book_id | title                      |
++---------+----------------------------+
+|    2028 | Mastering Oracle Databases |
+|    2031 | Comparative SQL            |
++---------+----------------------------+
+2 rows in set (0.00 sec)
+
+--------------
+/*  TASK 05 */
+select 
+ order_date
+, order_id
+, cust_id
+, 
+(
+	select cust_name_last
+	from a_bkorders.customers C
+	where OH.cust_id = C.cust_id
+) as "customer"
+,
+(
+	select sum(quantity)
+	from a_bkorders.order_details OD
+	where OH.order_id = OD.order_id
+	group by order_id
+) as "NumberBooks"
+,
+(
+	select sum(quantity*order_price)
+	from a_bkorders.order_details OD
+	where OH.order_id = OD.order_id
+) as "OrderCost"
+from a_bkorders.order_headers OH
+where quarter(order_date) = 2
+and year(order_date) = year(current_date)
+order by order_date
+--------------
+
++------------+----------+---------+--------------+-------------+-----------+
+| order_date | order_id | cust_id | customer     | NumberBooks | OrderCost |
++------------+----------+---------+--------------+-------------+-----------+
+| 2014-04-02 |    41853 |  234138 | Keats        |          30 |    999.00 |
+| 2014-04-05 |    31455 |  212921 | Books on Tap |           1 |     40.49 |
+| 2014-04-08 |     1256 |  272787 | Carlson      |           3 |     69.00 |
+| 2014-04-15 |    31560 |  276381 | Collins      |           1 |     40.49 |
+| 2014-05-01 |    23890 |  212921 | Books on Tap |          11 |    165.00 |
+| 2014-05-02 |    25803 |  224038 | Austin       |          45 |   2107.45 |
+| 2014-05-04 |    22774 |  239427 | Marksa       |         100 |   2749.50 |
+| 2014-05-05 |    10812 |  260368 | Muller       |           1 |     49.95 |
+| 2014-05-05 |    42891 |  228175 | Cardin       |           1 |     15.00 |
+| 2014-05-06 |    24802 |  228175 | Cardin       |           8 |   1295.60 |
+| 2014-05-24 |    42331 |  212921 | Books on Tap |           5 |     75.00 |
+| 2014-05-26 |    24345 |  224038 | Austin       |          10 |   1475.60 |
++------------+----------+---------+--------------+-------------+-----------+
+12 rows in set (0.00 sec)
+
+--------------
+/* TASK 06 */
+select cust_id, cust_name_last
+from a_bkorders.customers C
+where cust_id in
+	(
+		select cust_id
+		from a_bkorders.order_headers OH
+		where  C.cust_id = OH.cust_id
+		and
+		order_id in
+			(
+				select order_id
+				from a_bkorders.order_details OD
+				where exists
+					(
+						select *, count(*) as "ordNum" 
+						from a_bkorders.order_details inOD
+						where OD.book_id = inOD.book_id 
+						and OD.order_id = inOD.order_id
+						group by order_id, book_id
+						having count(*) > 1
+					)
+		)
+	)
+--------------
+
++---------+----------------+
+| cust_id | cust_name_last |
++---------+----------------+
+|  222477 | Rossetti       |
+|  239427 | Marksa         |
+|  259906 | Capybara       |
+|  260368 | Muller         |
+|  282716 | Biederbecke    |
+|  290298 | Swift          |
+|  299099 | Sam            |
++---------+----------------+
+7 rows in set (0.00 sec)
+
+--------------
+/*  TASK 07 */
+
+
+/*  TASK 08 */
+
+
+/*  TASK 09 */
+
+
+/*  TASK 10 */
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+Bye
