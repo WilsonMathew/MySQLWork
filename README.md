@@ -1,9 +1,10 @@
 Written by Wilson Mateo
 
-MySQL querries written for CS155A at CCSF
+MySQL querries.
 =========================================
 
-I will upload the assignements, and the solutions
+assignements, and solutions.
 --------------
 
 
+written for CS155A at CCSF
